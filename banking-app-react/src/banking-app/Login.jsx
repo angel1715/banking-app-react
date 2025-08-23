@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react"; // icons librery
 
 
@@ -71,9 +71,9 @@ function Login(){
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link text-light fs-4" href="#">
+                  <Link class="nav-link text-light fs-4" to="/services">
                     Services
-                  </a>
+                  </Link>
                 </li>
                 <li class="nav-item">
                   <a

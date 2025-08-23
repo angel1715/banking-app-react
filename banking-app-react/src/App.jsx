@@ -5,6 +5,8 @@ import Register from "./banking-app/Register"
 import Login from "./banking-app/Login";
 import Dashboard from "./banking-app/Dashboard";
 import CardInformation from "./banking-app/CardInformation";
+import Services from "./banking-app/Services";
+import AboutUs from "./banking-app/About";
 function App() {
   
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route exact path="/login" element={<Login />}/>
         <Route exact path="/dashboard" element={<Dashboard />}/>
         <Route exact path="/cardInformation" element={<CardInformation />}/>
+        <Route exact path="/services" element={<Services />} />
+        <Route exact path="/about" element={<AboutUs />} />
      </Routes>
      
      </BrowserRouter>

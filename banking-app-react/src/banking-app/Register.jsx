@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Register() {
   let navigate = useNavigate();
@@ -56,7 +56,7 @@ function Register() {
       <div className="nav-container">
         <nav className="navbar navbar-expand-lg bg-dark">
           <div class="container-fluid">
-            <a className="navbar-brand fs-1 text-light" href="#">
+            <a className="navbar-brand fs-1 text-light" href="/">
               AG-Bank
             </a>
             <button
@@ -84,14 +84,14 @@ function Register() {
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link text-light fs-4" href="#">
+                  <Link class="nav-link text-light fs-4" to="/services">
                     Services
-                  </a>
+                  </Link>
                 </li>
                 <li class="nav-item">
                   <a
                     class="nav-link text-light fs-4"
-                    href="#"
+                    href="/about"
                     aria-expanded="false"
                   >
                     About us

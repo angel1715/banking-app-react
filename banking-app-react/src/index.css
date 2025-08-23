@@ -826,7 +826,6 @@ background-color: rgb(10, 162, 38);
  
 }
 
-
 .footer{
   width: 100%;
   background-color: rgb(42, 42, 42);
@@ -858,5 +857,18 @@ background-color: rgb(10, 162, 38);
   }
 }
 
+.services-container{
+  padding: .1px;
+}
 
+.services-content-container{
+  margin-top: 90px;
+}
 
+.about-container{
+  padding: .1px;
+}
+
+.about-content-container{
+  margin-top: 90px;
+}

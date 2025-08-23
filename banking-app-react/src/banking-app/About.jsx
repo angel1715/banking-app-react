@@ -34,7 +34,17 @@ const AboutUs = () => {
   ];
 
   return (
-    <section id="about" className="py-5 bg-white">
+    <div className="about-container">
+
+       <nav class="navbar dashboard-navbar">
+        <div class="container-fluid">
+          <a class="navbar-brand fs-1 text-light" href="/">
+            AG-Bank
+          </a>  
+        </div>
+      </nav>
+
+    <section id="about" className="py-5 bg-white about-content-container">
       <div className="container">
         <h2 className="text-center mb-5 fw-bold">About us</h2>
         <div className="row">
@@ -54,6 +64,7 @@ const AboutUs = () => {
         </div>
       </div>
     </section>
+    </div>
   );
 };
 

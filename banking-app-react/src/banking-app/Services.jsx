@@ -16,7 +16,7 @@ const Services = () => {
       descripcion:
         "You can use your online bank to make your online purchases anywhere you are anytime you want.",
     },
-    {
+    { 
       icon: "bi-bank",
       titulo: "Deposit",
       descripcion:
@@ -43,8 +43,18 @@ const Services = () => {
   ];
 
   return (
-    <div className="container py-5">
-      <h2 className="text-center mb-4">Our services</h2>
+    <div className="services-container">
+    <nav class="navbar dashboard-navbar">
+        <div class="container-fluid">
+          <a class="navbar-brand fs-1 text-light" href="/">
+            AG-Bank
+          </a>  
+        </div>
+      </nav>
+
+    <div className="container py-5 services-content-container">
+      
+      <h2 className="text-center mb-5">Our services</h2>
       <div className="row">
         {services.map((service, index) => (
           <div className="col-md-4 mb-4" key={index}>
@@ -58,6 +68,7 @@ const Services = () => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 };

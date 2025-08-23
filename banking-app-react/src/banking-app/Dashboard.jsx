@@ -73,24 +73,19 @@ function Dashboard() {
 
     const requestResult = await axios.get(`${basesUrl}/${accountNumber}`);
 
-    const usuario = requestResult.data;
+    if(requestResult.data === "User not found"){
+      alert("User not found, please verify the account number");
+
+    } else{
+      const usuario = requestResult.data;
     setUserInfo(requestResult.data);
     console.log(requestResult.data);
+
+    }
+    
   };
 
-  //Find a user to send them the money
-  const findUserByCardNumber = async (e) => {
-    e.preventDefault();
-
-    const basesUrl = "http://localhost:8080/banking/findByCardNumber";
-
-    const requestResult = await axios.get(`${basesUrl}/${cardNumber}`);
-
-    const usuario = requestResult.data;
-    setUserInfo(requestResult.data);
-    console.log(requestResult.data);
-  };
-
+ 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
@@ -177,14 +172,21 @@ function Dashboard() {
       );
 
 
-      if (!requestResult.data) {
+      if (requestResult.data === "You are sending money to your same account: please choose the deposit option") {
         alert(
           "You are sending money to your same account: please choose the deposit option"
         );
         return;
       } else if (requestResult.data === "Account number invalid") {
         alert("Account number invalid");
-      } else {
+          return;
+      } 
+      else if(requestResult.data === "Insufficient balance"){
+           alert("Insufficient balance");
+           return;
+      }
+      
+      else {
         const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Send",

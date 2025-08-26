@@ -37,7 +37,12 @@ function Register() {
      const onSubmit = async (e)=>{
         e.preventDefault();
         const baseUrl = "http://localhost:8080/banking/saveNewUser";
-        await axios.post(baseUrl, user);
+       const requestResult = await axios.post(baseUrl, user);
+
+        if(requestResult.data === "Email is already in use"){
+          alert("Email is already in use")
+        }
+        else{
         
         setBlockCursor(true);
         if(accountCreatedMessageRef.current){
@@ -48,7 +53,7 @@ function Register() {
           
         }, 3000);
         
-
+      }
      }
 
   return (
@@ -89,13 +94,13 @@ function Register() {
                   </Link>
                 </li>
                 <li class="nav-item">
-                  <a
+                  <Link
                     class="nav-link text-light fs-4"
-                    href="/about"
+                    to="/about"
                     aria-expanded="false"
                   >
                     About us
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

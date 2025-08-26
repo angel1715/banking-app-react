@@ -1,4 +1,3 @@
-
 const AboutUs = () => {
   const secciones = [
     {
@@ -35,35 +34,34 @@ const AboutUs = () => {
 
   return (
     <div className="about-container">
-
-       <nav class="navbar dashboard-navbar">
+      <nav class="navbar dashboard-navbar">
         <div class="container-fluid">
           <a class="navbar-brand fs-1 text-light" href="/">
             AG-Bank
-          </a>  
+          </a>
         </div>
       </nav>
 
-    <section id="about" className="py-5 bg-white about-content-container">
-      <div className="container">
-        <h2 className="text-center mb-5 fw-bold">About us</h2>
-        <div className="row">
-          {secciones.map((item, index) => (
-            <div className="col-md-4 mb-4" key={index}>
-              <div className="card h-100 shadow-sm border-0">
-                <div className="card-body text-center">
-                  <i
-                    className={`bi ${item.icon} display-4 text-primary mb-3`}
-                  ></i>
-                  <h5 className="card-title">{item.titulo}</h5>
-                  <p className="card-text">{item.descripcion}</p>
+      <section id="about" className="py-5 bg-white about-content-container">
+        <div className="container">
+          <h2 className="text-center mb-5 fw-bold">About us</h2>
+          <div className="row">
+            {secciones.map((item, index) => (
+              <div className="col-md-4 mb-4" key={index}>
+                <div className="card h-100 shadow-sm border-0">
+                  <div className="card-body text-center">
+                    <i
+                      className={`bi ${item.icon} display-4 text-primary mb-3`}
+                    ></i>
+                    <h5 className="card-title">{item.titulo}</h5>
+                    <p className="card-text">{item.descripcion}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
     </div>
   );
 };

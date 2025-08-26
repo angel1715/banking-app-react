@@ -73,19 +73,15 @@ function Dashboard() {
 
     const requestResult = await axios.get(`${basesUrl}/${accountNumber}`);
 
-    if(requestResult.data === "User not found"){
+    if (requestResult.data === "User not found") {
       alert("User not found, please verify the account number");
-
-    } else{
+    } else {
       const usuario = requestResult.data;
-    setUserInfo(requestResult.data);
-    console.log(requestResult.data);
-
+      setUserInfo(requestResult.data);
+      console.log(requestResult.data);
     }
-    
   };
 
- 
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
@@ -171,27 +167,26 @@ function Dashboard() {
         `${basesUrl}/${accountNumber}/${amountWithoutSeparator}/${Id}`
       );
 
-
-      if (requestResult.data === "You are sending money to your same account: please choose the deposit option") {
+      if (
+        requestResult.data ===
+        "You are sending money to your same account: please choose the deposit option"
+      ) {
         alert(
           "You are sending money to your same account: please choose the deposit option"
         );
         return;
       } else if (requestResult.data === "Account number invalid") {
         alert("Account number invalid");
-          return;
-      } 
-      else if(requestResult.data === "Insufficient balance"){
-           alert("Insufficient balance");
-           return;
-      }
-      
-      else {
+        return;
+      } else if (requestResult.data === "Insufficient balance") {
+        alert("Insufficient balance");
+        return;
+      } else {
         const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Send",
           transactionAmount: amount,
-          transactionDate: new Date().toLocaleString(), 
+          transactionDate: new Date().toLocaleString(),
         };
 
         const updatedTransactions = [...transactions, newTransaction];
@@ -223,30 +218,28 @@ function Dashboard() {
     e.preventDefault();
     const basesUrl = "http://localhost:8080/banking/withdrawFunds";
     setIsChecked(false);
-        const amountWithoutSeparator = amount.replace(/,/g, "");
-
+    const amountWithoutSeparator = amount.replace(/,/g, "");
 
     try {
       const requestResult = await axios.patch(
         `${basesUrl}/${user.cardNumber}/${amountWithoutSeparator}/${Id}`
       );
 
-       if(requestResult.data === "Insufficient balance"){
-          alert("Insufficient balance");
-          return;
-
-       }
-       
-       else if(requestResult.data === "You don't have a card register to withdraw your funds"){
-           alert("You don't have a card register to withdraw your funds");
-           return;
-       }
-       else{
-         const newTransaction = {
+      if (requestResult.data === "Insufficient balance") {
+        alert("Insufficient balance");
+        return;
+      } else if (
+        requestResult.data ===
+        "You don't have a card register to withdraw your funds"
+      ) {
+        alert("You don't have a card register to withdraw your funds");
+        return;
+      } else {
+        const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Withdraw",
           transactionAmount: amount,
-          transactionDate: new Date().toLocaleString(), 
+          transactionDate: new Date().toLocaleString(),
         };
 
         const updatedTransactions = [...transactions, newTransaction];
@@ -259,10 +252,10 @@ function Dashboard() {
 
         console.log(requestResult.data);
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-       }
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
 
       if (withdrawMoneyMessageRef.current) {
         withdrawMoneyMessageRef.current.style.display =
@@ -270,7 +263,6 @@ function Dashboard() {
             ? "block"
             : "none";
       }
-      
     } catch (error) {
       console.log("Error while withdrawing money");
     }
@@ -278,7 +270,6 @@ function Dashboard() {
 
   //function to handle the change of the expiration date input
   const handleExpirationInputChange = (e) => {
-
     let value = e.target.value.replace(/\D/g, ""); // Just number
     if (value.length > 2) {
       value = value.slice(0, 2) + "/" + value.slice(2, 6);
@@ -286,7 +277,6 @@ function Dashboard() {
     setExpirationD(value);
   };
 
- 
   //function to handle the change of the card number input
   const handleCardNumberInputChange = (e) => {
     //Allow the card number input to accept only numbers
@@ -297,7 +287,7 @@ function Dashboard() {
 
     //Insert a dash after evey 4 dígits
     value = value.replace(/(\d{4})(?=\d)/g, "$1-");
-    
+
     setCardNumber(value);
   };
 
@@ -316,7 +306,7 @@ function Dashboard() {
   //Function to handle the deposit money transaction
   const handleDepositMoney = async (e) => {
     e.preventDefault();
-    
+
     const [month, year] = expirationD.split("/");
     const basesUrl = "http://localhost:8080/banking/depositFunds";
     //this gets the card numbers without the dashes to it send to the DB
@@ -324,22 +314,22 @@ function Dashboard() {
     const amountWithoutSeparator = amount.replace(/,/g, "");
 
     try {
-      const requestResult = await axios.patch(`${basesUrl}/${cardNumberWithoutDashes}/${month}/${year}/${cardVerificationValue}/${amountWithoutSeparator}/${Id}`);
+      const requestResult = await axios.patch(
+        `${basesUrl}/${cardNumberWithoutDashes}/${month}/${year}/${cardVerificationValue}/${amountWithoutSeparator}/${Id}`
+      );
 
       setIsChecked(false);
 
-      if(requestResult.data === "Card information is invalid"){
-        alert("Card information is invalid")
-      }else if(requestResult.data === "Insufficient balance"){
-                alert("Insufficient balance")
-
-      }
-      else{
-          const newTransaction = {
+      if (requestResult.data === "Card information is invalid") {
+        alert("Card information is invalid");
+      } else if (requestResult.data === "Insufficient balance") {
+        alert("Insufficient balance");
+      } else {
+        const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Deposit",
           transactionAmount: amount,
-          transactionDate: new Date().toLocaleString(), 
+          transactionDate: new Date().toLocaleString(),
         };
 
         const updatedTransactions = [...transactions, newTransaction];
@@ -355,17 +345,14 @@ function Dashboard() {
         setTimeout(() => {
           window.location.reload();
         }, 1000);
-      
 
-      if (depositMoneyMessageRef.current) {
-        depositMoneyMessageRef.current.style.display =
-          depositMoneyMessageRef.current.style.display = "none"
-            ? "block"
-            : "none";
+        if (depositMoneyMessageRef.current) {
+          depositMoneyMessageRef.current.style.display =
+            depositMoneyMessageRef.current.style.display = "none"
+              ? "block"
+              : "none";
+        }
       }
-      }
-      
-      
     } catch (error) {
       console.error("Error al enviar dinero:", error);
     }
@@ -476,8 +463,9 @@ function Dashboard() {
               required
               maxLength={9}
               value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
-              
+              onChange={(e) =>
+                setAccountNumber(e.target.value.replace(/\D/g, ""))
+              }
             />
             <label className="send-money-label fs-5">Amount</label>
             <input
@@ -646,7 +634,9 @@ function Dashboard() {
               maxLength={3}
               required
               value={cardVerificationValue}
-              onChange={(e)=>setCardVerificationValue(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) =>
+                setCardVerificationValue(e.target.value.replace(/\D/g, ""))
+              }
             />
             <label className="send-money-label fs-5">Amount</label>
             <input
@@ -674,7 +664,6 @@ function Dashboard() {
               type="submit"
               disabled={!isChecked}
               className="btn bg-success text-light send-form-btn mb-3"
-              
             >
               Deposit
             </button>
@@ -717,7 +706,16 @@ function Dashboard() {
           </div>
 
           <div className="balance-details">
-            <span className="balance-span"> US <NumericFormat value={newBalance} displayType={"text"} thousandSeparator="," prefix="$"/></span>
+            <span className="balance-span">
+              {" "}
+              US{" "}
+              <NumericFormat
+                value={newBalance}
+                displayType={"text"}
+                thousandSeparator=","
+                prefix="$"
+              />
+            </span>
             <p class="balance-title text-dark mb-3">Available balance</p>
           </div>
 
@@ -761,11 +759,15 @@ function Dashboard() {
                 <td>{transaction.transactionType}</td>
 
                 <td>
-                  <NumericFormat value={transaction.transactionAmount}
-                  displayType={"text"}
-                  thousandSeparator="," prefix={"$"}
-                  decimalScale={2} fixedDecimalScale />
-                  </td>
+                  <NumericFormat
+                    value={transaction.transactionAmount}
+                    displayType={"text"}
+                    thousandSeparator=","
+                    prefix={"$"}
+                    decimalScale={2}
+                    fixedDecimalScale
+                  />
+                </td>
 
                 <td>{transaction.transactionDate}</td>
                 <td>
@@ -781,8 +783,7 @@ function Dashboard() {
           </tbody>
         </table>
       </div>
-             <Footer />
-
+      <Footer />
     </div>
   );
 }

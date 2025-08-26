@@ -18,23 +18,28 @@ function Login() {
     //prevent to place the parameters in the url
     e.preventDefault();
 
+    try{
     const baseUrl = "http://localhost:8080/banking/login";
     const requestResult = await axios.post(
       `${baseUrl}/${emailLogin}/${passwordLogin}`
     );
-
     console.log(requestResult.data);
+    
     const { user, jwt } = requestResult.data;
     localStorage.setItem("jwt", jwt);
     setUser(user);
-    //verify if the returned value is different than null
-    if (!requestResult.data) {
-      setBadCredentials("Email or Password incorrect!");
-    } else {
+    
+    
+    
       navigate("/dashboard", {
         state: { user, jwt, emailLogin, passwordLogin },
       });
+    
+}catch(error){
+    if (error.response && error.response.status === 401) {
+      setBadCredentials("Email or Password incorrect!");
     }
+}
   };
 
   return (
@@ -75,13 +80,13 @@ function Login() {
                   </Link>
                 </li>
                 <li class="nav-item">
-                  <a
+                  <Link
                     class="nav-link text-light fs-4"
-                    href="#"
+                    to="/about"
                     aria-expanded="false"
                   >
                     About us
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -102,6 +107,8 @@ function Login() {
               class="form-control mb-4 fs-5"
               id="exampleInputEmail1"
               name="email"
+              required
+              value={emailLogin}
               onChange={(e) => setEmailLogin(e.target.value.trim())}
             />
           </div>
@@ -120,6 +127,8 @@ function Login() {
               class="form-control mb-4 fs-5 w-full p-2 pr-10 border rounded-lg"
               id="exampleInputPassword1"
               name="password"
+              required
+              value={passwordLogin}
               onChange={(e) => setPasswordLogin(e.target.value.trim())}
             />
           </div>

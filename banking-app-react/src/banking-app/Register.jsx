@@ -37,13 +37,7 @@ function Register() {
      const onSubmit = async (e)=>{
         e.preventDefault();
         const baseUrl = "http://localhost:8080/banking/saveNewUser";
-       const requestResult = await axios.post(baseUrl, user);
-
-        if(requestResult.data === "Email is already in use"){
-          alert("Email is already in use")
-        }
-        else{
-        
+       const requestResult = await axios.post(baseUrl, user).then(()=>{
         setBlockCursor(true);
         if(accountCreatedMessageRef.current){
          accountCreatedMessageRef.current.style.display = accountCreatedMessageRef.current.style.display = "none" ? "block" : "none";
@@ -52,8 +46,19 @@ function Register() {
           navigate("/login");
           
         }, 3000);
+
+       }).catch((error)=>{
+          if(error.response){
+
+            if(error.response.status === 400){
+                alert("Email is already in use");
+            }
+
+          }
+       });
+
+       
         
-      }
      }
 
   return (

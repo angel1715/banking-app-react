@@ -1,52 +1,65 @@
 import axios from "axios";
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react"; // icons librery
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react"; // Icon library
 
+/**
+ * Login Component
+ * Renders a login form that allows the user to authenticate using email and password.
+ * On successful login, the JWT token is saved to localStorage and the user
+ * is redirected to the dashboard.
+ */
 function Login() {
-  //variable to redirect the customer to another component
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
+  // Component state
   const [user, setUser] = useState(null);
   const [emailLogin, setEmailLogin] = useState("");
   const [passwordLogin, setPasswordLogin] = useState("");
-  const [badCredentials, setBadCredentials] = useState();
+  const [badCredentials, setBadCredentials] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  //function to handle the user login
+  /**
+   * Handles the user login by sending credentials to the backend.
+   * If successful, saves the JWT in localStorage and navigates to the dashboard.
+   * If credentials are invalid, shows an error message.
+   * 
+   * @param {React.FormEvent} e - The form submit event
+   */
   const handleLogin = async (e) => {
-    //prevent to place the parameters in the url
-    e.preventDefault();
+    e.preventDefault(); // Prevents parameters from being shown in the URL
 
-    try{
-    const baseUrl = "http://localhost:8080/banking/login";
-    const requestResult = await axios.post(
-      `${baseUrl}/${emailLogin}/${passwordLogin}`
-    );
-    console.log(requestResult.data);
-    
-    const { user, jwt } = requestResult.data;
-    localStorage.setItem("jwt", jwt);
-    setUser(user);
-    
-    
-    
+    try {
+      const baseUrl = "http://localhost:8080/banking/login";
+      const response = await axios.post(
+        `${baseUrl}/${emailLogin}/${passwordLogin}`
+      );
+
+      const { user, jwt } = response.data;
+
+      // Save JWT in local storage
+      localStorage.setItem("jwt", jwt);
+      setUser(user);
+
+      // Redirect to dashboard
       navigate("/dashboard", {
         state: { user, jwt, emailLogin, passwordLogin },
       });
-    
-}catch(error){
-    if (error.response && error.response.status === 401) {
-      setBadCredentials("Email or Password incorrect!");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setBadCredentials("Email or Password incorrect!");
+      } else {
+        setBadCredentials("An error occurred. Please try again later.");
+      }
     }
-}
   };
 
   return (
     <div className="login-container">
+      {/* Navigation Bar */}
       <div className="nav-container">
         <nav className="navbar navbar-expand-lg bg-dark">
-          <div class="container-fluid">
+          <div className="container-fluid">
             <a className="navbar-brand fs-1 text-light" href="#">
               AG-Bank
             </a>
@@ -58,33 +71,25 @@ function Login() {
               aria-expanded="false"
               aria-label="Toggle navigation"
             >
-              <span class="navbar-toggler-icon"></span>
+              <span className="navbar-toggler-icon"></span>
             </button>
             <div
-              class="collapse navbar-collapse menu-container"
+              className="collapse navbar-collapse menu-container"
               id="navbarSupportedContent"
             >
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-3">
-                <li class="nav-item">
-                  <a
-                    class="nav-link text-light fs-4"
-                    aria-current="page"
-                    href="/"
-                  >
+              <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-3">
+                <li className="nav-item">
+                  <a className="nav-link text-light fs-4" href="/">
                     Home
                   </a>
                 </li>
-                <li class="nav-item">
-                  <Link class="nav-link text-light fs-4" to="/services">
+                <li className="nav-item">
+                  <Link className="nav-link text-light fs-4" to="/services">
                     Services
                   </Link>
                 </li>
-                <li class="nav-item">
-                  <Link
-                    class="nav-link text-light fs-4"
-                    to="/about"
-                    aria-expanded="false"
-                  >
+                <li className="nav-item">
+                  <Link className="nav-link text-light fs-4" to="/about">
                     About us
                   </Link>
                 </li>
@@ -94,38 +99,47 @@ function Login() {
         </nav>
       </div>
 
+      {/* Login Form */}
       <div className="login-form-container container bg-light">
         <h2 className="text-center mb-5 login-form-title">Log in</h2>
-        <p className="text-center bad-credentials">{badCredentials}</p>
-        <form className="login-form" onSubmit={(e) => handleLogin(e)}>
-          <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">
+        {badCredentials && (
+          <p className="text-center bad-credentials">{badCredentials}</p>
+        )}
+
+        <form className="login-form" onSubmit={handleLogin}>
+          {/* Email Field */}
+          <div className="mb-3">
+            <label htmlFor="inputEmail" className="form-label">
               Email
             </label>
             <input
               type="email"
-              class="form-control mb-4 fs-5"
-              id="exampleInputEmail1"
+              id="inputEmail"
+              className="form-control mb-4 fs-5"
               name="email"
               required
               value={emailLogin}
               onChange={(e) => setEmailLogin(e.target.value.trim())}
             />
           </div>
-          <div class="mb-3 login-password-container">
-            <label for="exampleInputPassword1" class="form-label">
+
+          {/* Password Field with Toggle */}
+          <div className="mb-3 login-password-container">
+            <label htmlFor="inputPassword" className="form-label">
               Password
             </label>
             <span
-              class="show-password-icon "
+              className="show-password-icon"
               onClick={() => setShowPassword(!showPassword)}
+              role="button"
+              tabIndex={0}
             >
               {showPassword ? <EyeOff /> : <Eye />}
             </span>
             <input
               type={showPassword ? "text" : "password"}
-              class="form-control mb-4 fs-5 w-full p-2 pr-10 border rounded-lg"
-              id="exampleInputPassword1"
+              id="inputPassword"
+              className="form-control mb-4 fs-5 w-full p-2 pr-10 border rounded-lg"
               name="password"
               required
               value={passwordLogin}
@@ -133,6 +147,7 @@ function Login() {
             />
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             className="btn bg-dark text-light btn-lg login-submit-btn"
@@ -144,4 +159,5 @@ function Login() {
     </div>
   );
 }
+
 export default Login;

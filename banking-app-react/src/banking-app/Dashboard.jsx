@@ -37,15 +37,23 @@ function Dashboard() {
   });
 
   //This method is to get the new balance to show it on the user profile
+  
   const getNewBalance = async () => {
-    const basesUrl = "http://localhost:8080/banking/findByAccountNumber";
+    try{
+    const basesUrl = "http://localhost:8080/banking/findById";
 
-    const requestResult = await axios.get(`${basesUrl}/${user.accountNumber}
+    const requestResult = await axios.get(`${basesUrl}/${user.id}
     `);
 
     const newUserBalance = requestResult.data;
 
     setNewBalance(newUserBalance.balance);
+    }
+    catch(error){
+      if(error.response && error.response.status === 404){
+        alert("User not found");
+      }
+    }
   };
 
   useEffect(() => {
@@ -67,19 +75,26 @@ function Dashboard() {
 
   //Find a user to send them the money
   const findUserByAccountNumber = async (e) => {
+    try{
     e.preventDefault();
 
     const basesUrl = "http://localhost:8080/banking/findByAccountNumber";
 
     const requestResult = await axios.get(`${basesUrl}/${accountNumber}`);
 
-    if (requestResult.data === "User not found") {
-      alert("User not found, please verify the account number");
-    } else {
+    
       const usuario = requestResult.data;
       setUserInfo(requestResult.data);
       console.log(requestResult.data);
+    
+  }catch(error){
+    if(error.response){
+      if(error.response && error.response.status === 404){
+        alert("User not found, please verify the account number");
+      }
+      
     }
+  };
   };
 
   const handleCheckboxChange = (event) => {
@@ -136,15 +151,6 @@ function Dashboard() {
     window.location.reload();
   };
 
-  //close the confirm pasword element
-  const closeConfirmPassword = () => {
-    if (confirmPasswordRef.current) {
-      confirmPasswordRef.current.style.display = "none";
-      document.body.style.overflow = "scroll";
-    }
-    window.location.reload();
-  };
-
   const deleteTransaction = (idToDelete) => {
     const updatedTransactions = transactions.filter(
       (tx) => tx.id !== idToDelete
@@ -157,31 +163,17 @@ function Dashboard() {
   };
 
   const handleSendMoney = async (e) => {
+    try {
     e.preventDefault();
     const basesUrl = "http://localhost:8080/banking/sendMoney";
     setIsChecked(false);
     const amountWithoutSeparator = amount.replace(/,/g, "");
 
-    try {
+    
       const requestResult = await axios.patch(
         `${basesUrl}/${accountNumber}/${amountWithoutSeparator}/${Id}`
       );
-
-      if (
-        requestResult.data ===
-        "You are sending money to your same account: please choose the deposit option"
-      ) {
-        alert(
-          "You are sending money to your same account: please choose the deposit option"
-        );
-        return;
-      } else if (requestResult.data === "Account number invalid") {
-        alert("Account number invalid");
-        return;
-      } else if (requestResult.data === "Insufficient balance") {
-        alert("Insufficient balance");
-        return;
-      } else {
+      
         const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Send",
@@ -202,14 +194,28 @@ function Dashboard() {
         setTimeout(() => {
           window.location.reload();
         }, 2000);
-      }
+      
 
       if (sentMoneyMessageRef.current) {
         sentMoneyMessageRef.current.style.display =
           sentMoneyMessageRef.current.style.display = "none" ? "block" : "none";
       }
-    } catch (error) {
-      console.error("Error al enviar dinero:", error);
+    } catch(error){
+      if(error.response){
+         if(error.response.data.message === "You cannot send money to your own account. Use deposit instead."){
+          alert("You cannot send money to your own account. Use deposit instead.");
+         }
+          if(error.response && error.response.status === 404){
+           alert("User not found. please verify the account number");
+         }
+         
+         if(error.response.data.message === "Insufficient balance"){
+          alert("Insufficient balance")
+
+         }
+         
+
+      } 
     }
   };
 
@@ -264,7 +270,12 @@ function Dashboard() {
             : "none";
       }
     } catch (error) {
-      console.log("Error while withdrawing money");
+        if(error.response){
+          if(error.response.data.message === "Insufficient balance"){
+             alert("Insufficient balance");
+          }
+
+        }
     }
   };
 
@@ -320,11 +331,6 @@ function Dashboard() {
 
       setIsChecked(false);
 
-      if (requestResult.data === "Card information is invalid") {
-        alert("Card information is invalid");
-      } else if (requestResult.data === "Insufficient balance") {
-        alert("Insufficient balance");
-      } else {
         const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Deposit",
@@ -352,9 +358,18 @@ function Dashboard() {
               ? "block"
               : "none";
         }
-      }
+      
     } catch (error) {
-      console.error("Error al enviar dinero:", error);
+        if(error.response){
+          if(error.response.data.message === "Invalid card information"){
+             alert("Invalid card information");
+          }
+          if(error.response.data.message === "Insufficient card balance"){
+            alert("Insufficient card balance");
+
+          }
+
+        }
     }
   };
 
@@ -405,28 +420,7 @@ function Dashboard() {
         <div className="spin"></div>
       </div>
 
-      <div
-        className="password-confirmation-cotaier"
-        style={{ display: "none" }}
-        ref={confirmPasswordRef}
-      >
-        <form className="password-confirmation">
-          <span
-            className="close-enter-password-btn"
-            onClick={closeConfirmPassword}
-          >
-            &times;
-          </span>
-          <label className="password-confirmation-label">
-            Enter your password
-          </label>
-          <input type="password" className="password-confirmation-input" />
-
-          <button className="password-confirmation-submit btn text-light">
-            Submit
-          </button>
-        </form>
-      </div>
+      
 
       {/*Send money overlay container*/}
       <div

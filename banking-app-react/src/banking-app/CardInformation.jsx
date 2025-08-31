@@ -4,134 +4,138 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import { NumericFormat } from "react-number-format";
 
-function CardInformation(){
-
+/**
+ * CardInformation Component
+ * Displays user's card details including card number, expiration date, CVV, and balance.
+ * Allows toggling CVV visibility and navigating back to the dashboard.
+ */
+function CardInformation() {
   const location = useLocation();
-  const {user, jwt, passwordLogin} = location.state || {};
+  const { user, jwt, passwordLogin } = location.state || {};
   const [newCardBalance, setNewCardBalance] = useState(null);
-  const [accountNumber, setAccountNumber] = useState(user.accountNumber);
   const cvvRef = useRef(null);
   const cvvEyeIcon = useRef(null);
   const loader = useRef(null);
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const displayLoader = () =>{
-     if(loader.current){
-      loader.current.style.display = loader.current.style.display =       loader.current.style.display === "none" ? "block": "none";
+  /**
+   * Toggles the loader and navigates to the dashboard after 1 second.
+   */
+  const displayLoader = () => {
+    if (!loader.current) return;
 
-        document.body.style.overflow = "hidden"; 
-        setTimeout(
-      
-      function(){
-        navigate("/dashboard", {state:{user, jwt, passwordLogin}});
-        document.body.style.overflow = "scroll";
-      }, 1000
-      
-      );
-     }
+    loader.current.style.display =
+      loader.current.style.display === "none" ? "block" : "none";
+
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => {
+      navigate("/dashboard", { state: { user, jwt, passwordLogin } });
+      document.body.style.overflow = "scroll";
+    }, 1000);
   };
-  
-  //function to load the new card balance once the user makes a deposit
+
+  /**
+   * Fetches the latest card balance from the backend.
+   */
   const getNewBalance = async () => {
-      const basesUrl = "http://localhost:8080/banking/findByAccountNumber";
-      
-      const requestResult = await axios.get(`${basesUrl}/${user.accountNumber}
-      `);
-  
-      const newUserBalance = requestResult.data;
-  
-      setNewCardBalance(newUserBalance.cardBalance);
+    try {
+      const baseUrl = "http://localhost:8080/banking/findByAccountNumber";
+      const response = await axios.get(`${baseUrl}/${user.accountNumber}`);
+      setNewCardBalance(response.data.cardBalance);
+    } catch (error) {
+      console.error("Failed to fetch card balance:", error);
     }
+  };
 
-    useEffect(()=>{
-      
-      getNewBalance();
-    });
+  // Load the new balance when component mounts or when user.accountNumber changes
+  useEffect(() => {
+    getNewBalance();
+  }, [user.accountNumber]);
 
-    const showCvv = () =>{
-      if(cvvRef.current){
-        const cvvCurrentContent = cvvRef.current.innerHTML;
+  /**
+   * Toggles the CVV display between masked and visible.
+   */
+  const showCvv = () => {
+    if (!cvvRef.current || !cvvEyeIcon.current) return;
 
-        if(cvvEyeIcon.current.classList.contains("fa-eye-slash")){
-           cvvEyeIcon.current.classList.remove("fa-eye-slash");
-           cvvEyeIcon.current.classList.add("fa-eye");
-        }else{
-          cvvEyeIcon.current.classList.remove("fa-eye");
-           cvvEyeIcon.current.classList.add("fa-eye-slash");
-        }
+    const isMasked = cvvRef.current.innerHTML === "cvv";
 
-        if(cvvCurrentContent.includes("cvv")){
-          cvvRef.current.innerHTML = user.cardVerificationValue;
-        }
-        else{
-          cvvRef.current.innerHTML = "cvv"
-        }
+    cvvRef.current.innerHTML = isMasked
+      ? user.cardVerificationValue
+      : "cvv";
 
+    cvvEyeIcon.current.classList.toggle("fa-eye");
+    cvvEyeIcon.current.classList.toggle("fa-eye-slash");
+  };
 
-      }
-    }
+  return (
+    <>
+      <div className="card-information-container">
+        <div className="token-validation" style={{ display: "none" }} ref={loader}>
+          <div className="spin"></div>
+        </div>
 
-    return(
-      <>
-        <div className="card-information-container">
-         <div className="token-validation" style={{display: "none"}} ref={loader}><div className="spin"></div></div>
-            
-      <nav class="navbar card-information-navbar">
-        <div class="container-fluid">
-          <a class="navbar-brand fs-1 text-light" href="#">
-            AG-Bank
-          </a>
-                     
+        <nav className="navbar card-information-navbar">
+          <div className="container-fluid">
+            <a className="navbar-brand fs-1 text-light" href="#">
+              AG-Bank
+            </a>
             <button
-              class="log-out-btn btn btn-lg text-light"
+              className="log-out-btn btn btn-lg text-light"
               onClick={displayLoader}
             >
               Dashboard
             </button>
-         
-        </div>
-      </nav>
+          </div>
+        </nav>
 
-      
-      <div className="card-info-container container">
-        <h2 className="text-center card-info-title">Card details</h2>
-        <i class="fa-solid fa-credit-card card-icon text-center"></i>
-        
-        
-        <div className="card-number-container mt-5">
+        <div className="card-info-container container">
+          <h2 className="text-center card-info-title">Card details</h2>
+          <i className="fa-solid fa-credit-card card-icon text-center"></i>
+
+          <div className="card-number-container mt-5">
             <p className="card-number-title">Card number</p>
             <p className="card-number">{user.cardNumber}</p>
-            <hr></hr>
+            <hr />
 
             <div>
-            <p className="card-expiration-title">Exp</p>
-            <p className="card-expiration-date">{user.expirationMonth}/{user.expirationYear}</p>
+              <p className="card-expiration-title">Exp</p>
+              <p className="card-expiration-date">
+                {user.expirationMonth}/{user.expirationYear}
+              </p>
             </div>
 
-            <hr></hr>
+            <hr />
             <div>
-              <p className="cvv-title" ref={cvvRef}>cvv</p>
-              <p className="cvv" onClick={showCvv}><i class="fa-solid fa-eye-slash" ref={cvvEyeIcon}></i></p>
+              <p className="cvv-title" ref={cvvRef}>
+                cvv
+              </p>
+              <p className="cvv" onClick={showCvv}>
+                <i className="fa-solid fa-eye-slash" ref={cvvEyeIcon}></i>
+              </p>
             </div>
-            
-        </div>
+          </div>
 
-        <div className="card-balance-container mt-5">
-            <span className="card-balance">US <NumericFormat value={newCardBalance} displayType={"text"} thousandSeparator="," prefix="$"/>
+          <div className="card-balance-container mt-5">
+            <span className="card-balance">
+              US{" "}
+              <NumericFormat
+                value={newCardBalance}
+                displayType={"text"}
+                thousandSeparator=","
+                prefix="$"
+              />
             </span>
             <p className="card-balance-title">Available balance</p>
+          </div>
         </div>
-
-        
-        
       </div>
-         
-        </div>
 
-       <Footer />
-        </>
-    );
-
+      <Footer />
+    </>
+  );
 }
+
 export default CardInformation;

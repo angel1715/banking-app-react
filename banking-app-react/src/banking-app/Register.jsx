@@ -2,70 +2,89 @@ import axios from "axios";
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+/**
+ * Register Component
+ * Handles the registration of new users by submitting their personal details
+ * to the backend. It includes validation for phone number input, feedback on
+ * account creation, and redirects the user to the login page after success.
+ */
 function Register() {
-  let navigate = useNavigate();
-  const [value, setValue] = useState("");
-  const [blockCursor, setBlockCursor] = useState(false);
+  const navigate = useNavigate();
+
+  // Local state for form data
+  const [formData, setFormData] = useState({
+    fName: "",
+    lName: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
+
+  // State to manage submission button status
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reference to the success message div
   const accountCreatedMessageRef = useRef(null);
 
-  //ensures that the phone number input accept only number (0-9)
-  const handlePhoneNumberInputChange = (e) => {
-    
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {// just digits (0-9)
-      
-      setValue(value);
-    }
-    setUser({...user, [e.target.name]: e.target.value.trim()});
+  const { fName, lName, phone, email, password } = formData;
+
+  /**
+   * Handles input changes for text, email, and password fields.
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value.trim() });
   };
-    const [user, setUser] = useState({
-        fName:"",
-        lName:"",
-        phone:"",
-        email:"",
-        password:""
 
-    });
+  /**
+   * Ensures phone input only allows digits (0–9).
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
+  const handlePhoneNumberInputChange = (e) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setFormData({ ...formData, phone: value });
+    }
+  };
 
-    const {fName, lName, phone, email, password} = user;
+  /**
+   * Handles form submission. Sends registration data to the backend,
+   * displays a success message, and redirects to login after 3 seconds.
+   * Shows an error if the email is already in use.
+   * @param {React.FormEvent<HTMLFormElement>} e - Form submission event
+   */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-     const handleInputChange = (e)=>{
-         setUser({...user, [e.target.name]: e.target.value.trim()});
-     }
+    try {
+      const baseUrl = "http://localhost:8080/banking/saveNewUser";
+      await axios.post(baseUrl, formData);
 
-     
-     const onSubmit = async (e)=>{
-        e.preventDefault();
-        const baseUrl = "http://localhost:8080/banking/saveNewUser";
-       const requestResult = await axios.post(baseUrl, user).then(()=>{
-        setBlockCursor(true);
-        if(accountCreatedMessageRef.current){
-         accountCreatedMessageRef.current.style.display = accountCreatedMessageRef.current.style.display = "none" ? "block" : "none";
+      if (accountCreatedMessageRef.current) {
+        accountCreatedMessageRef.current.style.display = "block";
       }
-        setTimeout(()=>{
-          navigate("/login");
-          
-        }, 3000);
 
-       }).catch((error)=>{
-          if(error.response){
-
-            if(error.response.status === 400){
-                alert("Email is already in use");
-            }
-
-          }
-       });
-
-       
-        
-     }
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+    } catch (error) {
+      if (error.response?.status === 400) {
+        alert("Email is already in use");
+      } else {
+        alert("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="register-container">
+      {/* Navigation Bar */}
       <div className="nav-container">
         <nav className="navbar navbar-expand-lg bg-dark">
-          <div class="container-fluid">
+          <div className="container-fluid">
             <a className="navbar-brand fs-1 text-light" href="/">
               AG-Bank
             </a>
@@ -77,33 +96,25 @@ function Register() {
               aria-expanded="false"
               aria-label="Toggle navigation"
             >
-              <span class="navbar-toggler-icon"></span>
+              <span className="navbar-toggler-icon"></span>
             </button>
             <div
-              class="collapse navbar-collapse menu-container"
+              className="collapse navbar-collapse menu-container"
               id="navbarSupportedContent"
             >
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-3">
-                <li class="nav-item">
-                  <a
-                    class="nav-link text-light fs-4"
-                    aria-current="page"
-                    href="/"
-                  >
+              <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-3">
+                <li className="nav-item">
+                  <a className="nav-link text-light fs-4" href="/">
                     Home
                   </a>
                 </li>
-                <li class="nav-item">
-                  <Link class="nav-link text-light fs-4" to="/services">
+                <li className="nav-item">
+                  <Link className="nav-link text-light fs-4" to="/services">
                     Services
                   </Link>
                 </li>
-                <li class="nav-item">
-                  <Link
-                    class="nav-link text-light fs-4"
-                    to="/about"
-                    aria-expanded="false"
-                  >
+                <li className="nav-item">
+                  <Link className="nav-link text-light fs-4" to="/about">
                     About us
                   </Link>
                 </li>
@@ -113,107 +124,111 @@ function Register() {
         </nav>
       </div>
 
-      <div className="crete-account-message bg-light" ref={accountCreatedMessageRef} style={{display: "none"}}><p className="crete-account-message-title text-center mt-3">Account successfully created</p></div>
-      
+      {/* Success Message */}
+      <div
+        className="create-account-message bg-light"
+        ref={accountCreatedMessageRef}
+        style={{ display: "none" }}
+      >
+        <p className="create-account-message-title text-center mt-3">
+          Account successfully created
+        </p>
+      </div>
+
+      {/* Registration Form */}
       <div className="register-form-container container bg-light">
-        <form onSubmit={(e)=> onSubmit(e)}>
+        <form onSubmit={handleSubmit}>
           <h2 className="text-center mb-5 register-form-title">
             Create new account
           </h2>
-          <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">
-              First Name
-            </label>
-            <input
-              type="text"
-              pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
-              title="Just letters and white spaces"
-              class="form-control mb-4 fs-5"
-              id="exampleInputEmail1"
-              value={fName}
-              name="fName"
-              onChange={(e)=> handleInputChange(e)}
-              required
-            />
 
-            <label for="exampleInputEmail1" class="form-label">
-              Last Name
-            </label>
-            <input
-              type="text"
-              pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
-              title="Just letters and white spaces"
-              class="form-control mb-4 fs-5"
-              value={lName}
-              name="lName"
-              onChange={(e)=> handleInputChange(e)}
-              required
-            />
+          {/* First Name */}
+          <label className="form-label">First Name</label>
+          <input
+            type="text"
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+            title="Only letters and spaces allowed"
+            className="form-control mb-4 fs-5"
+            value={fName}
+            name="fName"
+            onChange={handleInputChange}
+            required
+          />
 
-            <label for="exampleInputEmail1" class="form-label">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              class="form-control mb-4 fs-5"
-              value={value}
-              name="phone"
-              onChange={(e)=>handlePhoneNumberInputChange(e)}
-              minLength={10}
-              maxLength={10}
-              required
-            />
+          {/* Last Name */}
+          <label className="form-label">Last Name</label>
+          <input
+            type="text"
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+            title="Only letters and spaces allowed"
+            className="form-control mb-4 fs-5"
+            value={lName}
+            name="lName"
+            onChange={handleInputChange}
+            required
+          />
 
-            <label for="exampleInputEmail1" class="form-label">
-              Email address
-            </label>
-            <input
-              type="email"
-              class="form-control mb-4 fs-5"
-              id="exampleInputEmail1"
-              value={email}
-              name="email"
-              onChange={(e)=> handleInputChange(e)}
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="exampleInputPassword1" class="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              class="form-control mb-4 fs-5"
-              id="exampleInputPassword1"
-              value={password}
-              name="password"
-              onChange={(e)=> handleInputChange(e)}
-              required
-            />
-          </div>
-          <div class="mb-3 form-check">
+          {/* Phone Number */}
+          <label className="form-label">Phone Number</label>
+          <input
+            type="text"
+            className="form-control mb-4 fs-5"
+            value={phone}
+            name="phone"
+            onChange={handlePhoneNumberInputChange}
+            minLength={10}
+            maxLength={10}
+            required
+          />
+
+          {/* Email */}
+          <label className="form-label">Email address</label>
+          <input
+            type="email"
+            className="form-control mb-4 fs-5"
+            value={email}
+            name="email"
+            onChange={handleInputChange}
+            required
+          />
+
+          {/* Password */}
+          <label className="form-label">Password</label>
+          <input
+            type="password"
+            className="form-control mb-4 fs-5"
+            value={password}
+            name="password"
+            onChange={handleInputChange}
+            required
+          />
+
+          {/* Terms Checkbox */}
+          <div className="mb-3 form-check">
             <input
               type="checkbox"
-              class="form-check-input"
-              id="exampleCheck1"
-              required="true"
+              className="form-check-input"
+              id="termsCheck"
+              required
             />
-            <label class="form-check-label" for="exampleCheck1">
+            <label className="form-check-label" htmlFor="termsCheck">
               Accept and continue
             </label>
           </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            class="btn bg-dark text-light btn-lg register-submit-btn"
-            disabled={blockCursor}
-            style={{cursor: blockCursor}}
-            
+            className="btn bg-dark text-light btn-lg register-submit-btn"
+            disabled={isSubmitting}
+            style={{ cursor: isSubmitting ? "not-allowed" : "pointer" }}
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </button>
         </form>
       </div>
-    </div>
+    </div> 
   );
 }
+
 export default Register;

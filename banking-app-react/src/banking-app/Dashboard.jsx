@@ -8,10 +8,9 @@ function Dashboard() {
   const location = useLocation();
   const { user, jwt, emailLogin, passwordLogin } = location.state || {};
 
+  //Main states
   const [sender, setSender] = useState(user);
   const [isChecked, setIsChecked] = useState(false);
-  const sendOverlayRef = useRef(null);
-  const withdrawdOverlayRef = useRef(null);
   const [accountNumber, setAccountNumber] = useState(null);
   const [cardNumber, setCardNumber] = useState(null);
   const [expirationD, setExpirationD] = useState(null);
@@ -19,43 +18,51 @@ function Dashboard() {
   const [amount, setAmount] = useState();
   const [Id, setId] = useState(user.id);
   const [newBalance, setNewBalance] = useState(null);
-  const amountRef = useRef(null);
-  const dateRef = useRef(null);
   const [userInfo, setUserInfo] = useState({});
+
+  //References
+  const withdrawdOverlayRef = useRef(null);
+  const sendOverlayRef = useRef(null);
   const sentMoneyMessageRef = useRef(null);
   const withdrawMoneyMessageRef = useRef(null);
   const depositMoneyMessageRef = useRef(null);
   const tokenValidationRef = useRef(null);
-  const confirmPasswordRef = useRef(null);
-  const [deletingId, setDeletingId] = useState(null);
   const depositOverlayRef = useRef(null);
+
+  //Function to redirect the user to another component
   let navigate = useNavigate();
 
+  // Load transactions from localStorage (persistent history per user)
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem(`transactions_${Id}`);
     return saved ? JSON.parse(saved) : [];
   });
 
-  //This method is to get the new balance to show it on the user profile
-  
+  /**
+   * Fetch the latest balance of the logged-in user
+   */
   const getNewBalance = async () => {
-    try{
-    const basesUrl = "http://localhost:8080/banking/findById";
+    try {
+      const basesUrl = "http://localhost:8080/banking/findById";
 
-    const requestResult = await axios.get(`${basesUrl}/${user.id}
+      const requestResult = await axios.get(`${basesUrl}/${user.id}
     `);
 
-    const newUserBalance = requestResult.data;
+      const newUserBalance = requestResult.data;
 
-    setNewBalance(newUserBalance.balance);
-    }
-    catch(error){
-      if(error.response && error.response.status === 404){
+      setNewBalance(newUserBalance.balance);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
         alert("User not found");
       }
     }
   };
 
+  /**
+   * On component mount:
+   * - Fetch user balance
+   * - Show temporary token validation overlay
+   */
   useEffect(() => {
     getNewBalance();
 
@@ -73,34 +80,37 @@ function Dashboard() {
     }, 2000);
   }, []);
 
-  //Find a user to send them the money
+  /**
+   * Find user by account number (used when sending money)
+   */
   const findUserByAccountNumber = async (e) => {
-    try{
-    e.preventDefault();
+    try {
+      e.preventDefault();
 
-    const basesUrl = "http://localhost:8080/banking/findByAccountNumber";
+      const basesUrl = "http://localhost:8080/banking/findByAccountNumber";
 
-    const requestResult = await axios.get(`${basesUrl}/${accountNumber}`);
+      const requestResult = await axios.get(`${basesUrl}/${accountNumber}`);
 
-    
       const usuario = requestResult.data;
       setUserInfo(requestResult.data);
       console.log(requestResult.data);
-    
-  }catch(error){
-    if(error.response){
-      if(error.response && error.response.status === 404){
-        alert("User not found, please verify the account number");
+    } catch (error) {
+      if (error.response) {
+        if (error.response && error.response.status === 404) {
+          alert("User not found, please verify the account number");
+        }
       }
-      
     }
   };
-  };
 
+  /**
+   * Checkbox state handler for confirming transactions
+   */
   const handleCheckboxChange = (event) => {
     setIsChecked(event.target.checked);
   };
 
+  // Functions to open overlays
   const displaySendOverlay = () => {
     if (sendOverlayRef.current) {
       sendOverlayRef.current.style.display = "block";
@@ -121,9 +131,8 @@ function Dashboard() {
       document.body.style.overflow = "hidden";
     }
   };
-  /*This function is to display the screen that is going to show when the 
-  user clicks the send money button
-*/
+
+  // Functions to close overlays
   const closeSendOverlay = () => {
     if (sendOverlayRef.current) {
       window.location.reload();
@@ -151,6 +160,9 @@ function Dashboard() {
     window.location.reload();
   };
 
+  /**
+   * Delete a transaction from history
+   */
   const deleteTransaction = (idToDelete) => {
     const updatedTransactions = transactions.filter(
       (tx) => tx.id !== idToDelete
@@ -162,64 +174,71 @@ function Dashboard() {
     );
   };
 
+  /**
+   * Send money to another user
+   */
   const handleSendMoney = async (e) => {
     try {
-    e.preventDefault();
-    const basesUrl = "http://localhost:8080/banking/sendMoney";
-    setIsChecked(false);
-    const amountWithoutSeparator = amount.replace(/,/g, "");
+      e.preventDefault();
+      const basesUrl = "http://localhost:8080/banking/sendMoney";
+      setIsChecked(false);
+      const amountWithoutSeparator = amount.replace(/,/g, "");
 
-    
       const requestResult = await axios.patch(
         `${basesUrl}/${accountNumber}/${amountWithoutSeparator}/${Id}`
       );
-      
-        const newTransaction = {
-          id: crypto.randomUUID(),
-          transactionType: "Send",
-          transactionAmount: amount,
-          transactionDate: new Date().toLocaleString(),
-        };
 
-        const updatedTransactions = [...transactions, newTransaction];
+      // Save transaction to localStorage
+      const newTransaction = {
+        id: crypto.randomUUID(),
+        transactionType: "Send",
+        transactionAmount: amount,
+        transactionDate: new Date().toLocaleString(),
+      };
 
-        setTransactions(updatedTransactions);
-        localStorage.setItem(
-          `transactions_${Id}`,
-          JSON.stringify(updatedTransactions)
-        );
+      const updatedTransactions = [...transactions, newTransaction];
 
-        console.log("Transacción realizada:", requestResult.data);
+      setTransactions(updatedTransactions);
+      localStorage.setItem(
+        `transactions_${Id}`,
+        JSON.stringify(updatedTransactions)
+      );
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      
+      console.log("Transacción realizada:", requestResult.data);
 
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+      // Show success message
       if (sentMoneyMessageRef.current) {
         sentMoneyMessageRef.current.style.display =
           sentMoneyMessageRef.current.style.display = "none" ? "block" : "none";
       }
-    } catch(error){
-      if(error.response){
-         if(error.response.data.message === "You cannot send money to your own account. Use deposit instead."){
-          alert("You cannot send money to your own account. Use deposit instead.");
-         }
-          if(error.response && error.response.status === 404){
-           alert("User not found. please verify the account number");
-         }
-         
-         if(error.response.data.message === "Insufficient balance"){
-          alert("Insufficient balance")
+    } catch (error) {
+      if (error.response) {
+        if (
+          error.response.data.message ===
+          "You cannot send money to your own account. Use deposit instead."
+        ) {
+          alert(
+            "You cannot send money to your own account. Use deposit instead."
+          );
+        }
+        if (error.response && error.response.status === 404) {
+          alert("User not found. please verify the account number");
+        }
 
-         }
-         
-
-      } 
+        if (error.response.data.message === "Insufficient balance") {
+          alert("Insufficient balance");
+        }
+      }
     }
   };
 
-  //Function to handle the withdrawal transaction
+  /**
+   * Withdraw funds from user's card
+   */
   const handleWithdrawMoney = async (e) => {
     e.preventDefault();
     const basesUrl = "http://localhost:8080/banking/withdrawFunds";
@@ -241,6 +260,7 @@ function Dashboard() {
         alert("You don't have a card register to withdraw your funds");
         return;
       } else {
+        // Save transaction to localStorage
         const newTransaction = {
           id: crypto.randomUUID(),
           transactionType: "Withdraw",
@@ -270,12 +290,11 @@ function Dashboard() {
             : "none";
       }
     } catch (error) {
-        if(error.response){
-          if(error.response.data.message === "Insufficient balance"){
-             alert("Insufficient balance");
-          }
-
+      if (error.response) {
+        if (error.response.data.message === "Insufficient balance") {
+          alert("Insufficient balance");
         }
+      }
     }
   };
 
@@ -290,8 +309,7 @@ function Dashboard() {
 
   //function to handle the change of the card number input
   const handleCardNumberInputChange = (e) => {
-    //Allow the card number input to accept only numbers
-    let value = e.target.value.replace(/\D/g, "");
+    let value = e.target.value.replace(/\D/g, ""); //Just numbers
 
     //Limit the card number input to only 16 dígits
     value = value.slice(0, 16);
@@ -300,18 +318,6 @@ function Dashboard() {
     value = value.replace(/(\d{4})(?=\d)/g, "$1-");
 
     setCardNumber(value);
-  };
-
-  const manejarCambio = (e) => {
-    let input = e.target.value;
-
-    // 1️⃣ Eliminar todo lo que no sea número
-    input = input.replace(/\D/g, "");
-
-    // 2️⃣ Agregar separador de miles (usando comas, cambia a "." si quieres)
-    input = input.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-    setAmount(input);
   };
 
   //Function to handle the deposit money transaction
@@ -331,45 +337,42 @@ function Dashboard() {
 
       setIsChecked(false);
 
-        const newTransaction = {
-          id: crypto.randomUUID(),
-          transactionType: "Deposit",
-          transactionAmount: amount,
-          transactionDate: new Date().toLocaleString(),
-        };
+      const newTransaction = {
+        id: crypto.randomUUID(),
+        transactionType: "Deposit",
+        transactionAmount: amount,
+        transactionDate: new Date().toLocaleString(),
+      };
 
-        const updatedTransactions = [...transactions, newTransaction];
+      const updatedTransactions = [...transactions, newTransaction];
 
-        setTransactions(updatedTransactions);
-        localStorage.setItem(
-          `transactions_${Id}`,
-          JSON.stringify(updatedTransactions)
-        );
+      setTransactions(updatedTransactions);
+      localStorage.setItem(
+        `transactions_${Id}`,
+        JSON.stringify(updatedTransactions)
+      );
 
-        console.log("Transacción realizada:", requestResult.data);
+      console.log("Transacción realizada:", requestResult.data);
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
 
-        if (depositMoneyMessageRef.current) {
-          depositMoneyMessageRef.current.style.display =
-            depositMoneyMessageRef.current.style.display = "none"
-              ? "block"
-              : "none";
-        }
-      
+      if (depositMoneyMessageRef.current) {
+        depositMoneyMessageRef.current.style.display =
+          depositMoneyMessageRef.current.style.display = "none"
+            ? "block"
+            : "none";
+      }
     } catch (error) {
-        if(error.response){
-          if(error.response.data.message === "Invalid card information"){
-             alert("Invalid card information");
-          }
-          if(error.response.data.message === "Insufficient card balance"){
-            alert("Insufficient card balance");
-
-          }
-
+      if (error.response) {
+        if (error.response.data.message === "Invalid card information") {
+          alert("Invalid card information");
         }
+        if (error.response.data.message === "Insufficient card balance") {
+          alert("Insufficient card balance");
+        }
+      }
     }
   };
 
@@ -420,8 +423,6 @@ function Dashboard() {
         <div className="spin"></div>
       </div>
 
-      
-
       {/*Send money overlay container*/}
       <div
         className="send-overlay"
@@ -468,7 +469,13 @@ function Dashboard() {
               required
               maxLength={6}
               value={amount}
-              onChange={manejarCambio}
+              onChange={(e) =>
+                setAmount(
+                  e.target.value
+                    .replace(/\D/g, "")
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                )
+              }
             />
             <br></br>
             <span
@@ -546,7 +553,13 @@ function Dashboard() {
               required
               maxLength={6}
               value={amount}
-              onChange={manejarCambio}
+              onChange={(e) =>
+                setAmount(
+                  e.target.value
+                    .replace(/\D/g, "")
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                )
+              }
             />
             <br></br>
             <input
@@ -639,7 +652,13 @@ function Dashboard() {
               maxLength={6}
               required
               value={amount}
-              onChange={manejarCambio}
+              onChange={(e) =>
+                setAmount(
+                  e.target.value
+                    .replace(/\D/g, "")
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                )
+              }
             />
             <br></br>
             <input
@@ -782,3 +801,5 @@ function Dashboard() {
   );
 }
 export default Dashboard;
+
+

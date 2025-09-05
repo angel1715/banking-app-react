@@ -375,12 +375,17 @@ function Dashboard() {
       }
     }
   };
-
-  const handleLogout = () => {
+  
+  //function to handle the user logout
+  const handleLogout = async () => {
+    await axios.post("http://localhost:8080/banking/logout");
     localStorage.removeItem(jwt);
     sessionStorage.clear();
-    window.location.href = "/login";
-    window.history.replaceState(null, "", "/login");
+    navigate("/login")
+     window.history.pushState(null, "", window.location.href);
+      window.onpopstate = () => {
+        navigate("/login");
+      };
 
     if (tokenValidationRef.current) {
       tokenValidationRef.current.style.display = "block";
@@ -396,6 +401,7 @@ function Dashboard() {
     }, 1000);
   };
 
+  //shows a loader while validating the jwt
   const displayTokenValidation = () => {
     if (jwt) {
       if (tokenValidationRef.current) {
